@@ -1,7 +1,67 @@
 ﻿@page "/flights"
+@using FlightReservations.Data
 
-<h1>Flights</h1>
+<h1>Flight Finder</h1>
+<label>From:</label>
+<input type="text" @bind="origin"/>
+<label>To:</label>
+<input type="text" @bind="destination"/>
+<label>Day:</label>
+<input type="text" @bind="day"/>
+<button @onclick="FindFlights">Find Flights</button>
+<h2>Flights</h2>
+<select @onchange="ShowFlight">
+    <option disabled>Select a flight</option>
+    @foreach (var f in flights)
+    {
+        <option value="@f.Flight_Code">@f.Flight_Code</option>
+    }
+</select>
 
+<h2>Reserve</h2>
+<div>
+    <p>Flight Code:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Airline:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Day:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Time:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Cost:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Name:</p>
+    <input type="text" />
+</div>
+<div>
+    <p>Citizenship:</p>
+    <input type="text" />
+</div>
 @code {
+    FlightManager fm = new FlightManager();
+    List<Flight> flights = FlightManager.GetFlights();
+    string selectedFlight;
+    string origin;
+    string destination;
+    string day;
 
+    private void ShowFlight(ChangeEventArgs e)
+    {
+        selectedFlight = e.Value.ToString();
+    }
+
+    private void FindFlights()
+    {
+        flights = fm.findFlights(origin, destination, day);
+    }
 }
