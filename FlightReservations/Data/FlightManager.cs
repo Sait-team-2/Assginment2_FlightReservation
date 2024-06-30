@@ -41,10 +41,13 @@ namespace FlightReservations.Data
         }
         public List<Flight> findFlights(string origin, string destination, string day)
         {
+            origin = origin.ToLower();
+            destination = destination.ToLower();
+            day = day.ToLower();
             List<Flight> matchingFlights = new List<Flight>();
             foreach (Flight f in Flights)
             {
-                if(f.Origin_Airport == origin && f.Destination_Airport == destination && f.Day == day)
+                if(f.Origin_Airport.ToLower() == origin && f.Destination_Airport.ToLower() == destination && f.Day.ToLower() == day)
                 {
                     matchingFlights.Add(f);
                 }
