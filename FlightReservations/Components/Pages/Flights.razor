@@ -7,11 +7,13 @@
 <label>To:</label>
 <input type="text" @bind="destination"/>
 <label>Day:</label>
-<input type="text" @bind="day" />
-<button @onclick="FindFlights">Find Flights</button>
+<input type="text" @bind="day"/>
+
+<button @onclick="OnFindFlights">Find Flights</button>
+
 <h2>Flights</h2>
-<select @onchange="ShowFlight">
-    <option disabled>Select a flight</option>
+<select @onchange="OnShowFlight">
+    <option disabled selected>Select a flight</option>
     @foreach (var f in flights)
     {
         <option value="@f.Flight_Code">@($"{f.Flight_Code}, {f.Airline}, {f.Origin_Airport}, {f.Destination_Airport}, {f.Day}, {f.Time}, {f.Cost}")</option>
@@ -59,26 +61,62 @@
     string origin;
     string destination;
     string day;
-    //ShowFlight method: When called, based on click event, shows flight details.
-    private void ShowFlight(ChangeEventArgs e)
+
+    //OnFindFlights method: This method is called when the "Find Flights" button is clicked. 
+    //Calls FindFlights method in FlightManager class and finds flight based on origin, destination and day.
+    private void OnFindFlights()
     {
-        selectedFlightCode = e.Value.ToString();
+        flights = fm.FindFlights(origin, destination, day);
+        if (flights.Count > 0)
+        {
+            //Automatically select the first flight in the list.
+            SelectFlight(flights[0].Flight_Code);
+        }
+        else
+        {
+            ClearSelectedFlight();
+        }
+    }
+
+    //OnShowFlight method: This method is called when a flight is selected from the dropdown.
+    //Sets flightCode to value based on change event. Then calls SelectFlight method to display flight information.
+    private void OnShowFlight(ChangeEventArgs e)
+    {
+        string flightCode = e.Value.ToString();
+        SelectFlight(flightCode);
+    }
+
+    //SelectFlight method: Selects a flight and updates the flight details in the textboxes by binding variables.
+    private void SelectFlight(string flightCode)
+    {
+        Flight selectedFlight = null;
+        //Loops throught flights list to find flight.
         foreach (var flight in flights)
         {
-            if (flight.Flight_Code == selectedFlightCode)
+            if (flight.Flight_Code == flightCode)
             {
-                selectedAirline = flight.Airline;
-                selectedDay = flight.Day;
-                selectedTime = flight.Time;
-                selectedCost = flight.Cost.ToString();
+                selectedFlight = flight;
                 break;
             }
         }
+        //If flight is found, setting variables to selected flight details to display.
+        if (selectedFlight != null)
+        {
+            selectedFlightCode = selectedFlight.Flight_Code;
+            selectedAirline = selectedFlight.Airline;
+            selectedDay = selectedFlight.Day;
+            selectedTime = selectedFlight.Time;
+            selectedCost = selectedFlight.Cost.ToString();
+        }
     }
-    //FindFlights method: When called, it loads flights into flights list by calling FindFlights method in FlightManager class.
-    private void FindFlights()
-    {
-        flights = fm.FindFlights(origin, destination, day);
 
+    //ClearSelectedFlight method: Clears the selected flight details.
+    private void ClearSelectedFlight()
+    {
+        selectedFlightCode = null;
+        selectedAirline = null;
+        selectedDay = null;
+        selectedTime = null;
+        selectedCost = null;
     }
 }
