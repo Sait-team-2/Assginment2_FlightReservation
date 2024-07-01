@@ -59,7 +59,7 @@
     string origin;
     string destination;
     string day;
-
+    //ShowFlight method: When called, based on click event, shows flight details.
     private void ShowFlight(ChangeEventArgs e)
     {
         selectedFlightCode = e.Value.ToString();
@@ -75,7 +75,7 @@
             }
         }
     }
-
+    //FindFlights method: When called, it loads flights into flights list by calling FindFlights method in FlightManager class.
     private void FindFlights()
     {
         flights = fm.FindFlights(origin, destination, day);

@@ -8,20 +8,23 @@ using System.Threading.Tasks;
 
 namespace FlightReservations.Data
 {
+    //FlightManager class: Loads in flights data from flights.csv file and creates flight objects.
     public class FlightManager
     {
         string FLIGHT_TXT = "C:\\Users\\Amrit\\source\\repos\\Assginment2_FlightReservation\\FlightReservations\\flights.csv";
         public static List<Flight> Flights = new List<Flight>();
-
+        //Default constructor
         public FlightManager()
         {
             PopulateFlights();
         }
+        //PopulateFlights method: Loads in data of flights from flights.csv and creates flight objects. It then loads flight objects into a list of Flights.
         public void PopulateFlights()
         {
             try
             {
                 Flight flight;
+                //Foreach loop: Reads flights.csv file, splits data "," and loads data into individual variables. Finally creates flight objects and loads it into Flights list.
                 foreach (string line in File.ReadLines(FLIGHT_TXT))
                 {
                     string[] parts = line.Split(",");
@@ -44,16 +47,19 @@ namespace FlightReservations.Data
             }
 
         }
+        //GetFlights method: Returns the Flights list.
         public static List<Flight> GetFlights()
         {
             return Flights;
         }
+        //FindFlights method: Finds flights according to origin airport, destination airport and day of week. If found, loads it into a list of matchingFlights and returns the list.
         public List<Flight> FindFlights(string origin, string destination, string day)
         {
             origin = origin.ToLower();
             destination = destination.ToLower();
             day = day.ToLower();
             List<Flight> matchingFlights = new List<Flight>();
+            //loops through list of Flights objects loaded in from csv and finds flight based on details entered by user.
             foreach (Flight f in Flights)
             {
                 if(f.Origin_Airport.ToLower() == origin && f.Destination_Airport.ToLower() == destination && f.Day.ToLower() == day)

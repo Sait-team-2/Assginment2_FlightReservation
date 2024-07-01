@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlightReservations.Data
 {
+    //Flight class: Class for creating Flight objects.
     public class Flight
     {
         private string flight_code;
