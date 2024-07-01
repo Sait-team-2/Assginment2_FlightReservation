@@ -7,51 +7,55 @@
 <label>To:</label>
 <input type="text" @bind="destination"/>
 <label>Day:</label>
-<input type="text" @bind="day"/>
+<input type="text" @bind="day" />
 <button @onclick="FindFlights">Find Flights</button>
 <h2>Flights</h2>
 <select @onchange="ShowFlight">
     <option disabled>Select a flight</option>
     @foreach (var f in flights)
     {
-        <option value="@f">@f.Flight_Code</option>
+        <option value="@f.Flight_Code">@($"{f.Flight_Code}, {f.Airline}, {f.Origin_Airport}, {f.Destination_Airport}, {f.Day}, {f.Time}, {f.Cost}")</option>
     }
 </select>
 
 <h2>Reserve</h2>
-
 <div>
     <p>Flight Code:</p>
-    <input type="text" disabled/>
+    <input type="text" value="@selectedFlightCode" disabled/>
 </div>
 <div>
     <p>Airline:</p>
-    <input type="text" disabled/>
+    <input type="text" value="@selectedAirline" disabled/>
 </div>
 <div>
     <p>Day:</p>
-    <input type="text" disabled/>
+    <input type="text" value="@selectedDay" disabled/>
 </div>
 <div>
     <p>Time:</p>
-    <input type="text" disabled/>
+    <input type="text" value="@selectedTime" disabled/>
 </div>
 <div>
     <p>Cost:</p>
-    <input type="text" disabled/>
+    <input type="text" value="@selectedCost" disabled/>
 </div>
 <div>
     <p>Name:</p>
-    <input type="text" />
+    <input type="text"/>
 </div>
 <div>
     <p>Citizenship:</p>
-    <input type="text" />
+    <input type="text"/>
 </div>
+
 @code {
     FlightManager fm = new FlightManager();
     List<Flight> flights = FlightManager.GetFlights();
     string selectedFlightCode;
+    string selectedAirline;
+    string selectedDay;
+    string selectedTime;
+    string selectedCost;
     string origin;
     string destination;
     string day;
@@ -59,10 +63,22 @@
     private void ShowFlight(ChangeEventArgs e)
     {
         selectedFlightCode = e.Value.ToString();
+        foreach (var flight in flights)
+        {
+            if (flight.Flight_Code == selectedFlightCode)
+            {
+                selectedAirline = flight.Airline;
+                selectedDay = flight.Day;
+                selectedTime = flight.Time;
+                selectedCost = flight.Cost.ToString();
+                break;
+            }
+        }
     }
 
     private void FindFlights()
     {
         flights = fm.FindFlights(origin, destination, day);
+
     }
 }
