@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace FlightReservations.Data
     //FlightManager class: Loads in flights data from flights.csv file and creates flight objects.
     public class FlightManager
     {
-        string FLIGHT_TXT = "C:\\Users\\Amrit\\source\\repos\\Assginment2_FlightReservation\\FlightReservations\\flights.csv";
+        string FLIGHT_TXT = Path.Combine(AppContext.BaseDirectory, "flights.csv");
         public static List<Flight> Flights = new List<Flight>();
         //Default constructor
         public FlightManager()
