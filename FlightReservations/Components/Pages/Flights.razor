@@ -14,30 +14,31 @@
     <option disabled>Select a flight</option>
     @foreach (var f in flights)
     {
-        <option value="@f.Flight_Code">@f.Flight_Code</option>
+        <option value="@f">@f.Flight_Code</option>
     }
 </select>
 
 <h2>Reserve</h2>
+
 <div>
     <p>Flight Code:</p>
-    <input type="text" />
+    <input type="text" disabled/>
 </div>
 <div>
     <p>Airline:</p>
-    <input type="text" />
+    <input type="text" disabled/>
 </div>
 <div>
     <p>Day:</p>
-    <input type="text" />
+    <input type="text" disabled/>
 </div>
 <div>
     <p>Time:</p>
-    <input type="text" />
+    <input type="text" disabled/>
 </div>
 <div>
     <p>Cost:</p>
-    <input type="text" />
+    <input type="text" disabled/>
 </div>
 <div>
     <p>Name:</p>
@@ -50,18 +51,18 @@
 @code {
     FlightManager fm = new FlightManager();
     List<Flight> flights = FlightManager.GetFlights();
-    string selectedFlight;
+    string selectedFlightCode;
     string origin;
     string destination;
     string day;
 
     private void ShowFlight(ChangeEventArgs e)
     {
-        selectedFlight = e.Value.ToString();
+        selectedFlightCode = e.Value.ToString();
     }
 
     private void FindFlights()
     {
-        flights = fm.findFlights(origin, destination, day);
+        flights = fm.FindFlights(origin, destination, day);
     }
 }
