@@ -195,13 +195,13 @@
             errorMessage = ex.Message;
         }
 
-        //
+        //SaveReservationCsv method: Loads in reservation.csv file, reads file, then appends reservation data.
         void SaveReservationCsv(string reservationCsv)
         {
             try
             {
+                //string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
                 string RESERVATION_TXT = @"C:\Users\Amrit\source\repos\Assginment2_FlightReservation\FlightReservations\reservation.csv";
-
                 //Read all existing lines from the file.
                 List<string> lines = new List<string>();
                 if (File.Exists(RESERVATION_TXT))
