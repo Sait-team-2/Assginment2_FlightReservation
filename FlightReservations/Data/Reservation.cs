@@ -26,7 +26,12 @@ namespace FlightReservations.Data
             string flightCode = flight.Flight_Code.Substring(0, 3).ToUpper();
             string travelerNameCode = name.Substring(0, 3).ToUpper();
             string citizenshipCode = citizenship.Substring(0, 3).ToUpper();
-            return $"Reservation Code: {flightCode}{travelerNameCode}-{citizenshipCode}";
+            return $"{flightCode}{travelerNameCode}-{citizenshipCode}";
+        }
+        //toCSV method: Returns reservation details in CSV format to save to file.
+        public string toCSV()
+        {
+            return $"{SelectedFlight.Flight_Code},{TravelerName},{TravelerCitizen},{ReservationCode}";
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿@page "/flights"
 @using FlightReservations.Data
+@using System.IO
 
 <h1>Flight Finder</h1>
 <label>From:</label>
@@ -53,7 +54,7 @@
     <button @onclick="MakeReservation">Reserve</button>
 </div>
 <p>@errorMessage</p>
-<div>@reservationCode</div>
+<p>@reservationCode</p>
 @code {
     FlightManager fm = new FlightManager();
     //Loads in list of flights using FlightManager class method GetFlights.
@@ -183,14 +184,43 @@
             Reservation reservation = new Reservation(selectedFlight, travelerName, travelerCitizen);
             reservationCode = reservation.ReservationCode;
 
-            //Save reservation to binary file
-            //ReservationManager.SaveReservation(reservation);
+            //Save reservation to file
+            string reservationCSV = reservation.toCSV();
+            SaveReservationCsv(reservationCSV);
 
-            errorMessage = "Reservation successful!";
+            errorMessage = "Reservation successful! Reservation Code:";
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
+
+        //
+        void SaveReservationCsv(string reservationCsv)
+        {
+            try
+            {
+                string RESERVATION_TXT = @"C:\Users\Amrit\source\repos\Assginment2_FlightReservation\FlightReservations\reservation.csv";
+
+                //Read all existing lines from the file.
+                List<string> lines = new List<string>();
+                if (File.Exists(RESERVATION_TXT))
+                {
+                    lines = File.ReadAllLines(RESERVATION_TXT).ToList();
+                }
+
+                //Append the reservationCsv string to the list of lines.
+                lines.Add(reservationCsv);
+                //Write all lines back into file.
+                File.WriteAllLines(RESERVATION_TXT, lines);
+
+                errorMessage = "Reservation saved successfully!";
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+            }
+        }
+
     }
 }
