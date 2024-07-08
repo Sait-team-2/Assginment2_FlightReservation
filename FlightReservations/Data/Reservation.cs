@@ -12,8 +12,10 @@ namespace FlightReservations.Data
         private string reservationCode;
         private string flightCode;
         private string airline;
-        private string cost;
+        private int cost;
         private string name;
+        private string day;
+        private string time;
         private string citizenship;
         private string status;
         private Flight flightdata;
@@ -22,7 +24,9 @@ namespace FlightReservations.Data
         public string ReservationCode { get => reservationCode; set => reservationCode = value; }
         public string FlightCode { get => flightCode; set => flightCode = value; }
         public string Airline { get => airline; set => airline = value; }
-        public string Cost { get => cost; set => cost = value; }
+        public string Day { get => day; set => day = value; }
+        public string Time { get => time; set => time = value; }
+        public int Cost { get => cost; set => cost = value; }
         public string TravelerName { get => name; set => name = value; }
         public string TravelerCitizen { get => citizenship; set => citizenship = value; }
         public string Status { get => status; set => status = value; }
@@ -32,17 +36,17 @@ namespace FlightReservations.Data
         public Reservation() { }
 
         //parameterized constructor
-        public Reservation(string reservationCode, string flightCode, string airline, string cost, string name, string citizenship, string status, Flight flight)
+        public Reservation(string reservationCode, string flightCode, string airline, string day, string time, int cost, string name, string citizenship, string status)
         {
             this.ReservationCode = reservationCode;
             this.FlightCode = flightCode;
             this.Airline = airline;
+            this.Day = day;
+            this.time = time;
             this.Cost = cost;
             this.TravelerName = name;
             this.TravelerCitizen = citizenship;
             this.Status = status;
-            this.Flight = flight;
-
         }
 
         //this constructor is used to store the process to make the reservation

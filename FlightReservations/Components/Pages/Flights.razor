@@ -1,48 +1,9 @@
 ﻿@page "/flights"
 @using FlightReservations.Data
 @using System.IO
-<style>
-    p {
-        text-align: left;
-    }
+@using System
 
-    h1, h2 {
-        text-align: center;
-        padding: 20px; }
-
-    button { 
-        background-color: navy; 
-        color: white;
-        border:solid 1px navy;
-        position: center;
-    }
-
-    p { 
-        margin: 0; 
-    }
-
-    .flex-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .flex-row {
-        width: 100%; /* Make each row take the full width */
-        display: flex; /* Apply flex to each row for alignment */
-        column-gap: 10px;
-    }
-
-    .flex-item {
-        flex: 1 1 25%; /* Grow to fill 1/4th of the container */
-        box-sizing: border-box;
-    }
-
-    .flex-item label, .flex-item input, .flex-item button {
-        width: 100%;
-        display: block; /* Make label, input, and button take the full width of the flex item */
-    }
-
-</style>
+<link href="./css/FlightReservation.css" rel="stylesheet" />
 
 <section id="FlightFinder">
     <h1>Flight Finder</h1>
@@ -123,7 +84,7 @@
     <p>Citizenship:</p>
     <input class="flex-row" type="text" @bind="@travelerCitizen" />
 </div>
-<div>
+    <div class="center-button-container">
     <br/>
     <button @onclick="MakeReservation">Reserve</button>
 </div>

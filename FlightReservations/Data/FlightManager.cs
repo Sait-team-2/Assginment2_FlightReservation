@@ -12,8 +12,9 @@ namespace FlightReservations.Data
     //FlightManager class: Loads in flights data from flights.csv file and creates flight objects.
     public class FlightManager
     {
-        string FLIGHT_TXT = Path.Combine(AppContext.BaseDirectory, "flights.csv");
+        string FLIGHT_TXT = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\flights.csv"));
         public static List<Flight> Flights = new List<Flight>();
+        
         //Default constructor
         public FlightManager()
         {
@@ -53,6 +54,7 @@ namespace FlightReservations.Data
         {
             return Flights;
         }
+
         //FindFlights method: Finds flights according to origin airport, destination airport and day of week. If found, loads it into a list of matchingFlights and returns the list.
         public List<Flight> FindFlights(string origin, string destination, string day)
         {

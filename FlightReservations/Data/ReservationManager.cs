@@ -12,38 +12,69 @@ namespace FlightReservations.Data
     public class ReservationManager
     {
         public List<Flight> flights;
-        public static List<Reservation> reservations;
 
-        string code {get; set;} 
         string airline {get; set;} 
-        string name {get; set;}
         string travelerName {get; set;}
         string travelerCitizen {get; set;}
         string errorMessage {get; set;}
         string reservationCode  {get; set;}
         string selectedFlightCode {get; set;}
 
+        string RESERVATION_PATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+        public static List<Reservation> Reservations = new List<Reservation>(); 
        
 
         public ReservationManager()
         {
             flights = new List<Flight>();
-            reservations = new List<Reservation>();
+            Reservations = new List<Reservation>();
+            PopulateReservations();
         }
 
         //static method that can be accessed throughout the project
         public static List<Reservation> GetReservations()
         {
-            return reservations;
+            return Reservations;
+        }
+
+        public void PopulateReservations()
+        {
+            try
+            {
+                Reservation reservationlist;
+                //Foreach loop: Reads flights.csv file, splits data "," and loads data into individual variables. Finally creates flight objects and loads it into Flights list.
+                foreach (string line in File.ReadLines(RESERVATION_PATH))
+                {
+                    string[] parts = line.Split(",");
+                    string reservationCode = parts[0];
+                    string flightCode = parts[1];
+                    string airline = parts[2];
+                    string day = parts[3];
+                    string time = parts[4];
+                    int cost = int.Parse(parts[5]);
+                    string name = parts[6];
+                    string citizenship = parts[7];
+                    string status = parts[8];
+
+                    //For reservations should I just get the flight
+                    reservationlist = new Reservation(reservationCode, flightCode, airline, day, time, cost, name, citizenship, status);
+                    Reservations.Add(reservationlist);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
 
         public List<Reservation> MakeReservation(string code, Flight flight, string name, string citizenship)
         {
             Reservation reservation = new Reservation(reservationCode, name, citizenship, flight);
 
-            reservations.Add(reservation);
+            Reservations.Add(reservation);
 
-            return reservations;
+            return Reservations;
 /*
             try
             {
@@ -132,7 +163,7 @@ namespace FlightReservations.Data
 */
         }
 
-        public List<Reservation> FindReservations(string code, string airline, string name, List<Reservation> reservationlist)
+        public List<Reservation> FindReservations(string code, string airline, string name, List<Reservation>? reservationlist)
         {
             var selectedreservation = new List<Reservation>();
             //Loops throught reservations list to find reserved flight.
@@ -152,10 +183,10 @@ namespace FlightReservations.Data
         public void UpdateReservation()
         {
 
-            string filePath = "..//Files/reservations.csv";
+            string filePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
             using (BinaryWriter binWriter = new BinaryWriter(File.Open(filePath, FileMode.Create)))
             {
-                foreach (var reservation in reservations)
+                foreach (var reservation in Reservations)
                 {
                     binWriter.Write(UTF8Encoding.Default.GetBytes(
                        $"{reservation.ReservationCode}," +
@@ -181,7 +212,7 @@ namespace FlightReservations.Data
             try
             {
                 //string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
-                string RESERVATION_TXT = @"..\\Files\reservations.csv";
+                string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory,  "Files", "reservation.csv");
                 //Read all existing lines from the file.
                 List<string> lines = new List<string>();
                 if (File.Exists(RESERVATION_TXT))
