@@ -1,60 +1,98 @@
 ﻿@page "/flights"
 @using FlightReservations.Data
 @using System.IO
+@using System
 
-<h1>Flight Finder</h1>
-<label>From:</label>
-<input type="text" @bind="origin"/>
-<label>To:</label>
-<input type="text" @bind="destination"/>
-<label>Day:</label>
-<input type="text" @bind="day"/>
+<link href="./css/FlightReservation.css" rel="stylesheet" />
 
-<button @onclick="OnFindFlights">Find Flights</button>
+<section id="FlightFinder">
+    <h1>Flight Finder</h1>
+    <div class="flex-container">
+        <!-- First Row -->
+        <div class=flex-row>
+            <div class="flex-item">
+                <label for="origin" >From:</label>
+            </div>
+            <div class="flex-item">
+                <label for="destination" >To:</label>
+            </div>
+            <div class="flex-item">
+                <label for="day">Day:</label>
+            </div>
+            <div class="flex-item">
+                <!-- Blank space for alignment -->
+            </div>
+        </div>
+        <!-- Second Row -->
+        <div class="flex-row">
+            <div class="flex-item">
+                <input type="text" id="origin" placeholder="Any" @bind="origin" />
+            </div>
+            <div class="flex-item">
+                <input type="text" id="destination" placeholder="Any" @bind="destination" />
+            </div>
+            <div class="flex-item">
+                <input type="text" id="day" placeholder="Any" @bind="day" />
+            </div>
+            <div class="flex-item">
+                <button type="button" @onclick="OnFindFlights">Find Flights</button>
+            </div>
+        </div>
+    </div>
+</section>
 
-<h2>Flights</h2>
-<select @onchange="OnShowFlight">
-    <option disabled selected>Select a flight</option>
-    @foreach (var f in flights)
-    {
-        <option value="@f.Flight_Code">@($"{f.Flight_Code}, {f.Airline}, {f.Origin_Airport}, {f.Destination_Airport}, {f.Day}, {f.Time}, {f.Cost}")</option>
-    }
-</select>
+<section id="Flights">
+    <h2>Flights</h2>
+    <!-- Need to filter flights based on origin, destination and day. -->
+    <select class="flex-row" @onchange="OnShowFlight">
+        <option disabled selected>Select a flight</option>
+        @foreach (var f in flights)
+        {
+            <option value="@f.Flight_Code">@($"{f.Flight_Code}, {f.Airline}, {f.Origin_Airport}, {f.Destination_Airport}, {f.Day}, {f.Time}, {f.Cost}")</option>
+        }
+    </select>
+</section>
 
+<!-- TODO can we make this as reusable code block-->
+<section id="Reserve"> 
 <h2>Reserve</h2>
 <div>
     <p>Flight Code:</p>
-    <input type="text" value="@selectedFlightCode" disabled/>
+    <input class="flex-row" type="text" value="@selectedFlightCode" disabled />
 </div>
 <div>
     <p>Airline:</p>
-    <input type="text" value="@selectedAirline" disabled/>
+    <input class="flex-row" type="text" value="@selectedAirline" disabled />
 </div>
 <div>
     <p>Day:</p>
-    <input type="text" value="@selectedDay" disabled/>
+    <input class="flex-row" type="text" value="@selectedDay" disabled />
 </div>
 <div>
     <p>Time:</p>
-    <input type="text" value="@selectedTime" disabled/>
+    <input class="flex-row" type="text" value="@selectedTime" disabled />
 </div>
 <div>
     <p>Cost:</p>
-    <input type="text" value="@selectedCost" disabled/>
+    <input class="flex-row" type="text" value="@selectedCost" disabled />
 </div>
 <div>
     <p>Name:</p>
-    <input type="text" @bind="@travelerName"/>
+    <input class="flex-row" type="text" @bind="@travelerName" />
 </div>
 <div>
     <p>Citizenship:</p>
-    <input type="text" @bind="@travelerCitizen"/>
+    <input class="flex-row" type="text" @bind="@travelerCitizen" />
 </div>
-<div>
+    <div class="center-button-container">
+    <br/>
     <button @onclick="MakeReservation">Reserve</button>
 </div>
-<p>@errorMessage</p>
-<p>@reservationCode</p>
+</section>
+
+<!-- TODO: I can't make this error message centered -->
+<div class="flex-row align-items-center"><p>@errorMessage</p> </div>
+<div class="flex-row align-items-center"><p>@reservationCode</p> </div>
 @code {
     FlightManager fm = new FlightManager();
     //Loads in list of flights using FlightManager class method GetFlights.
@@ -106,7 +144,7 @@
             if (flight.Flight_Code == flightCode)
             {
                 selectedFlight = flight;
-                break;
+                break; //TODO: do we need break? I think this is not a best practice
             }
         }
         //If flight is found, setting variables to selected flight details to display.
@@ -136,6 +174,7 @@
 
         try
         {
+            //TODO: Need to used the exception file for all the exception handling
             //If a reservation is to be made but no flight is selected. Error message displayed.
             if (string.IsNullOrEmpty(selectedFlightCode))
             {
@@ -181,7 +220,7 @@
             }
 
             //Reservation object is made.
-            Reservation reservation = new Reservation(selectedFlight, travelerName, travelerCitizen);
+            Reservation reservation = new Reservation();
             reservationCode = reservation.ReservationCode;
 
             //Save reservation to file
@@ -201,7 +240,7 @@
             try
             {
                 //string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
-                string RESERVATION_TXT = @"C:\Users\Amrit\source\repos\Assginment2_FlightReservation\FlightReservations\reservation.csv";
+                string RESERVATION_TXT = @"..\\FlightReservations\Files\reservation.csv";
                 //Read all existing lines from the file.
                 List<string> lines = new List<string>();
                 if (File.Exists(RESERVATION_TXT))

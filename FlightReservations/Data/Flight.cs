@@ -30,6 +30,7 @@ namespace FlightReservations.Data
         public Flight()
         {
         }
+
         //Parameterized Constructor
         public Flight(string flight_code, string airline, string origin_airport, string destination_airport, string day, string time, int num_seats, double cost)
         {

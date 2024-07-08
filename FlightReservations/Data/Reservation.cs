@@ -8,18 +8,58 @@ namespace FlightReservations.Data
 {
     public class Reservation
     {
-        public Flight SelectedFlight { get; set; }
-        public string TravelerName { get; set; }
-        public string TravelerCitizen { get; set; }
-        public string ReservationCode { get; set; }
-        //Parameterized constructor.
-        public Reservation (Flight flight, string name, string citizenship)
+        //declaring variables
+        private string reservationCode;
+        private string flightCode;
+        private string airline;
+        private int cost;
+        private string name;
+        private string day;
+        private string time;
+        private string citizenship;
+        private string status;
+        private Flight flightdata;
+
+        //generation of properties
+        public string ReservationCode { get => reservationCode; set => reservationCode = value; }
+        public string FlightCode { get => flightCode; set => flightCode = value; }
+        public string Airline { get => airline; set => airline = value; }
+        public string Day { get => day; set => day = value; }
+        public string Time { get => time; set => time = value; }
+        public int Cost { get => cost; set => cost = value; }
+        public string TravelerName { get => name; set => name = value; }
+        public string TravelerCitizen { get => citizenship; set => citizenship = value; }
+        public string Status { get => status; set => status = value; }
+        public Flight Flight { get => flightdata; set => flightdata = value; }
+
+        //non-Parameterized constructor
+        public Reservation() { }
+
+        //parameterized constructor
+        public Reservation(string reservationCode, string flightCode, string airline, string day, string time, int cost, string name, string citizenship, string status)
         {
-            SelectedFlight = flight;
-            TravelerName = name;
-            TravelerCitizen = citizenship;
+            this.ReservationCode = reservationCode;
+            this.FlightCode = flightCode;
+            this.Airline = airline;
+            this.Day = day;
+            this.time = time;
+            this.Cost = cost;
+            this.TravelerName = name;
+            this.TravelerCitizen = citizenship;
+            this.Status = status;
+        }
+
+        //this constructor is used to store the process to make the reservation
+        public Reservation(string reservationCode, string name, string citizenship, Flight flight)
+        {
+            this.ReservationCode = reservationCode;
+            this.TravelerName = name;
+            this.TravelerCitizen = citizenship;
+            this.Flight = flight;
+
             ReservationCode = GenerateCode(flight, name, citizenship);
         }
+
         //GenerateCode method: Generates a 9 digit reservation code based on flightnumber, passenger name and citizenship.
         private string GenerateCode(Flight flight, string name, string citizenship)
         {
@@ -28,10 +68,23 @@ namespace FlightReservations.Data
             string citizenshipCode = citizenship.Substring(0, 3).ToUpper();
             return $"{flightCode}{travelerNameCode}-{citizenshipCode}";
         }
+
         //toCSV method: Returns reservation details in CSV format to save to file.
         public string toCSV()
         {
-            return $"{SelectedFlight.Flight_Code},{TravelerName},{TravelerCitizen},{ReservationCode}";
+            return $"{Flight.Flight_Code},{TravelerName},{TravelerCitizen},{ReservationCode}";
+        }
+
+        public override string ToString()
+        {
+            return "Reservation Code: " + ReservationCode +
+                    "\nFlight Code: " + FlightCode +
+                    "\nAirline: " + Airline +
+                    "\nCost: " + Cost +
+                    "\n Name: " + TravelerName +
+                    "\nCitizenship: " + TravelerCitizen +
+                    "\n Status: " + Status;
+
         }
     }
 }
