@@ -1,4 +1,18 @@
-﻿@page "/reservations"
+﻿<!--
+ /*
+ * Reservations.razor
+ * This file contains the code for the Reservations page.
+ * The Reservations page allows users to search for reservations, view reservation details, and update reservation details.
+ * The page contains a search form, a list of reservations, and a form to update reservation details.
+ * The page uses the ReservationManager class to interact with the reservation data.
+ * The page uses the ReservationValidationException class to validate
+ * reservation data before saving it to the file.
+ * The page uses the AirportManager class to get a list of airlines for the search form.
+ * The page uses the FlightManager class to get a list of flights for the search form.
+ * The page uses the Reservation class to represent a reservation.
+ */
+ -->
+@page "/reservations"
 @using FlightReservations.Data
 @using System
 @using System.IO
@@ -57,9 +71,9 @@
  
 <section id="Reservations">
     <h2>Reservations</h2>
-    <select class="flex-row" @onchange="OnShowFlightReserved">
+    <select id="ReservationList" class="flex-row" @bind-value="selectedReservationCode" @bind-value:event="oninput" @onchange="OnShowFlightReserved">
         <option value="">Select a reservation</option>
-        @foreach (var reservation in reservations)
+        @foreach (var reservation in matchingReservations)
         {
             <option value="@reservation.ReservationCode">
                 @reservation.ReservationCode, @reservation.Airline, @reservation.TravelerName, @reservation.TravelerCitizen
@@ -111,19 +125,21 @@
         <button @onclick="SaveReservations">Save</button>
     </div>
 </section> 
+<div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
+<div class="flex-row align-items-center" ><p>@message</p></div>
 
 @code {
-    private List<Reservation> reservations;
+    private List<Reservation> reservations = new List<Reservation>();
     ReservationManager rm = new ReservationManager();
     private Reservation? reservationSelected;
-    private List<Reservation> matchingReservations;
+    private List<Reservation> matchingReservations = new List<Reservation>();
 
     string? selectedReservationCode = null;
     string? selectedFlightCode = null;
     string? selectedAirline = null;
     string? selectedDay = null;
     string? selectedTime = null;
-    int? selectedCost;
+    double? selectedCost;
     string? selectedTravelerName = null;
     string? selectedTravelerCitizen = null;
     string? selectedStatus = null;
@@ -131,49 +147,68 @@
     string airline = string.Empty;
     string name = string.Empty;
 
-    string errorMessage;
+    string errorMessage = string.Empty;
+    string message = string.Empty;
 
     AirportManager am = new AirportManager();
     FlightManager fm = new FlightManager();
-
+    Exception validate = new Exception();
 
     // Initialization logic
     protected override void OnInitialized()
     {
         base.OnInitialized();
         reservations = ReservationManager.GetReservations();
+        matchingReservations = reservations;
     }
 
-    private List<Airport> airlineList = AirportManager.GetAirportNames();
+    private List<Flight> airlineList = FlightManager.GetFlights();
     private IEnumerable<string> filteredAirlines => airlineList
-        .Where(airport => airport.AirportName.Contains(airline, StringComparison.OrdinalIgnoreCase))
-        .Select(airport => airport.AirportName);
+        .Where(flight => flight.Airline.Contains(airline, StringComparison.OrdinalIgnoreCase))
+        .Select(airline => airline.Airline)
+        .Distinct();
 
-    //OnFindFlights method: This method is called when the "Find Flights" button is clicked.
-    //Calls FindFlights method in FlightManager class and finds flight based on origin, destination and day.
+    //OnFindReservations method: This method is called when the "Find Reservations" button is clicked.
+    //Calls FindReservations method in ReservationManager.
     private void OnFindReservations()
     {
-        matchingReservations = rm.FindReservations(code, airline, name, reservations);
+        try
+        {
+            matchingReservations = rm.FindReservations(code, airline, name, reservations);
+            if (matchingReservations.Any())
+            {
+                // Programmatically set the selected reservation to the first item
+                selectedReservationCode = matchingReservations.First().ReservationCode;
+                // Manually invoke any logic that depends on the selection change
+                OnShowFlightReserved(new ChangeEventArgs() { Value = selectedReservationCode });
+            }
+
+            if (matchingReservations.Count == 0)
+            {
+                ResetFields();
+                errorMessage = "No reservations found";
+            }
+            else
+            {
+                errorMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+
     }
 
-    //OnShowFlight method: This method is called when a flight is selected from the dropdown.
-    //Sets flightCode to value based on change event. Then calls SelectFlight method to display flight information.
+    //OnShowFlightReserved method: This method is called when a reservations is selected from the dropdown.
+    //Sets reservations values based on change event. Then calls PopulateReservationDetails method to display flight information.
     private void OnShowFlightReserved(ChangeEventArgs e)
     {
         var selectedCode = e.Value?.ToString();
 
         if (string.IsNullOrEmpty(selectedCode))
         {
-            // Reset fields
-            selectedReservationCode = null;
-            selectedAirline = null;
-            selectedCost = null;
-            selectedTravelerName = null;
-            selectedTravelerCitizen = null;
-            selectedDay = null;
-            selectedTime = null;
-            selectedFlightCode = null;
-            selectedStatus = null;
+            ResetFields();
         }
         else
         {
@@ -186,7 +221,23 @@
         }
     }
 
-     private void PopulateReservationDetails(Reservation reservation)
+    private void ResetFields()
+    {
+        selectedReservationCode = null;
+        selectedFlightCode = null;
+        selectedAirline = null;
+        selectedDay = null;
+        selectedTime = null;
+        selectedCost = null;
+        selectedTravelerName = null;
+        selectedTravelerCitizen = null;
+        selectedStatus = null;
+        errorMessage = string.Empty;
+        message = string.Empty;
+    }
+
+    // PopulateReservationDetails method: Populates the reservation details in the textboxes by binding variables.
+    private void PopulateReservationDetails(Reservation reservation)
     {
         selectedReservationCode = reservation.ReservationCode;
         selectedAirline = reservation.Airline;
@@ -197,13 +248,37 @@
         selectedTime = reservation.Time;
         selectedFlightCode = reservation.FlightCode;
         selectedStatus  = reservation.Status;
+
+        errorMessage = string.Empty;
+        message = string.Empty;
     }
 
+    // SaveReservations method: Saves the reservation details to the file.
     private void SaveReservations()
     {
-        rm.UpdateReservation();
+        //create new reservation object with updated values
+        //Reservation object is made.
+        Reservation reservation = new Reservation()
+            {
+                ReservationCode = selectedReservationCode,
+                Airline = selectedAirline,
+                Cost = selectedCost ?? 0,
+                TravelerName = selectedTravelerName,
+                TravelerCitizen = selectedTravelerCitizen,
+                Day = selectedDay,
+                Time = selectedTime,
+                FlightCode = selectedFlightCode,
+                Status = selectedStatus
+            };
+
+        //Add validations
+        ReservationValidationException.ValidateReservation(reservation);
+
+        //Update reservation to file
+        message = rm.UpdateReservation(reservation);
     }
 
+    // HandleKeyDown method: Handles the keydown event for the airline input field
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "Tab")
@@ -220,6 +295,7 @@
         }
     }
 
+    // SelectAirline method: Selects the airline from the filtered list
     private void SelectAirline(string airline)
     {
         this.airline = airline;

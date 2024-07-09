@@ -54,4 +54,11 @@ p {
     justify-content: center; /* Horizontally center the content */
     width: 100%; /* Take full width to allow centering */
     padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.align-items-center {
+    display: flex;
+    justify-content: center; /* Horizontally center the content */
+    width: 100%; /* Take full width to allow centering */
 }

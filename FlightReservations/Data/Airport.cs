@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace FlightReservations.Data
 {
+    /// <summary>
+    /// Represents an airport with a unique code and name.
+    /// This class is part of the flight reservation system and is used to manage airport-related information.
+    /// </summary>
     public class Airport
     {
         //Declaring variables 

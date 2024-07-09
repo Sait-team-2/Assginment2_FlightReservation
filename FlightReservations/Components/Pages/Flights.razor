@@ -1,4 +1,13 @@
-﻿@page "/flights"
+﻿<!--
+/* This is the Flights page. This page is used to find flights based on origin, destination and day. 
+* It also allows the user to select a flight and make a reservation. 
+* The user can enter their name and citizenship to make a reservation.
+* 
+* The page is divided into three sections: FlightFinder, Flights and Reserve.
+*/
+-->
+   
+@page "/flights"
 @using FlightReservations.Data
 @using System.IO
 @using System
@@ -44,7 +53,7 @@
 <section id="Flights">
     <h2>Flights</h2>
     <!-- Need to filter flights based on origin, destination and day. -->
-    <select class="flex-row" @onchange="OnShowFlight">
+    <select id="FlightList" class="flex-row" @onchange="OnShowFlight">
         <option disabled selected>Select a flight</option>
         @foreach (var f in flights)
         {
@@ -53,7 +62,6 @@
     </select>
 </section>
 
-<!-- TODO can we make this as reusable code block-->
 <section id="Reserve"> 
 <h2>Reserve</h2>
 <div>
@@ -90,9 +98,10 @@
 </div>
 </section>
 
-<!-- TODO: I can't make this error message centered -->
-<div class="flex-row align-items-center"><p>@errorMessage</p> </div>
+<div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
+<div class="flex-row align-items-center" ><p>@message</p></div>
 <div class="flex-row align-items-center"><p>@reservationCode</p> </div>
+
 @code {
     FlightManager fm = new FlightManager();
     //Loads in list of flights using FlightManager class method GetFlights.
@@ -109,6 +118,9 @@
     string travelerCitizen;
     string errorMessage;
     string reservationCode;
+    string message;
+
+    Flight selectedFlight;
 
     //OnFindFlights method: This method is called when the "Find Flights" button is clicked. 
     //Calls FindFlights method in FlightManager class and finds flight based on origin, destination and day.
@@ -137,7 +149,7 @@
     //SelectFlight method: Selects a flight and updates the flight details in the textboxes by binding variables.
     private void SelectFlight(string flightCode)
     {
-        Flight selectedFlight = null;
+        selectedFlight = null;
         //Loops throught flights list to find flight.
         foreach (var flight in flights)
         {
@@ -196,7 +208,6 @@
                 return;
             }
 
-            Flight selectedFlight = null;
             //Loops throught flights list to find flight.
             foreach (var flight in flights)
             {
@@ -220,14 +231,18 @@
             }
 
             //Reservation object is made.
-            Reservation reservation = new Reservation();
+            Reservation reservation = new Reservation(travelerName, travelerCitizen, selectedFlight);
             reservationCode = reservation.ReservationCode;
 
             //Save reservation to file
             string reservationCSV = reservation.toCSV();
             SaveReservationCsv(reservationCSV);
 
-            errorMessage = "Reservation successful! Reservation Code:";
+            message = "Reservation successful! Reservation Code:";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            errorMessage = $"Unauthorized access: {ex.Message}";
         }
         catch (Exception ex)
         {
@@ -237,28 +252,21 @@
         //SaveReservationCsv method: Loads in reservation.csv file, reads file, then appends reservation data.
         void SaveReservationCsv(string reservationCsv)
         {
-            try
+            // string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
+            string RESERVATION_TXT = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+            //Read all existing lines from the file.
+            List<string> lines = new List<string>();
+            if (File.Exists(RESERVATION_TXT))
             {
-                //string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
-                string RESERVATION_TXT = @"..\\FlightReservations\Files\reservation.csv";
-                //Read all existing lines from the file.
-                List<string> lines = new List<string>();
-                if (File.Exists(RESERVATION_TXT))
-                {
-                    lines = File.ReadAllLines(RESERVATION_TXT).ToList();
-                }
-
-                //Append the reservationCsv string to the list of lines.
-                lines.Add(reservationCsv);
-                //Write all lines back into file.
-                File.WriteAllLines(RESERVATION_TXT, lines);
-
-                errorMessage = "Reservation saved successfully!";
+                lines = File.ReadAllLines(RESERVATION_TXT).ToList();
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-            }
+
+            //Append the reservationCsv string to the list of lines.
+            lines.Add(reservationCsv);
+            //Write all lines back into file.
+            File.WriteAllLines(RESERVATION_TXT, lines);
+
+            message = "Reservation saved successfully!";
         }
 
     }
