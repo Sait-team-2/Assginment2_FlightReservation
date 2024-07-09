@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace FlightReservations.Data
 {
+    /// <summary>
+    /// Represents a flight and its associated details.
+    /// </summary>
+    /// <remarks>
+    /// This class is used to store information about a flight, including its code,
+    /// departure and arrival times, airline, and status. It serves as a central part
+    /// of the flight management system.
+    /// </remarks>
     //Flight class: Class for creating Flight objects.
     public class Flight
     {

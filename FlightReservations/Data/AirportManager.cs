@@ -10,6 +10,12 @@ namespace FlightReservations.Data
 {
     public class AirportManager
     {
+        /// <summary>
+        /// Manages airport operations such as creating, updating, and retrieving airport information.
+        /// </summary>
+        /// <remarks>
+        /// This class provides methods to manage the lifecycle of airport data within the application.
+        /// </remarks>
         public static readonly string  FILEPATH_airports =  Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\airports.csv"));
 
         //creating a list
