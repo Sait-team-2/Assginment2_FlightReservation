@@ -14,290 +14,51 @@
  -->
 @page "/reservations"
 @using FlightReservations.Data
-@using System
-@using System.IO
-@inject IJSRuntime JS
+<section>
+    <h1>Reservations</h1>
+    <input type="text" placeholder="Search" @bind="searchTerm" />
+    <button @onclick="SearchReservations">Search</button>
 
-<link href="./css/FlightReservation.css" rel="stylesheet" />
-
-<section id="ReservationFinder">
-    <h1>Reservation Finder</h1>
-    <div class="flex-container">
-        <!-- First Row -->
-        <div class=flex-row>
-            <div class="flex-item">
-                <label for="code">Code:</label>
-            </div>
-            <div class="flex-item">
-                <label for="airline">Airline:</label>
-            </div>
-            <div class="flex-item">
-                <label for="name">Name:</label>
-            </div>
-            <div class="flex-item">
-                <!-- Blank space for alignment -->
-            </div>
-        </div>
-        <!-- Second Row -->
-        <div class="flex-row">
-            <div class="flex-item">
-                <input type="text" id="code" placeholder="Any" @bind="code" />
-            </div>
-            <div class="flex-item">
-                <input type="text" id="airline" placeholder="Any" @bind="airline" @bind:event="oninput" @onkeydown="HandleKeyDown" />
-                @if (filteredAirlines.Any())
-                {
-                    <ul class="filtered-airlines-list">
-                        @foreach (var airline in filteredAirlines)
-                        {
-                            <li>@airline</li>
-                        }
-                    </ul>
-                }
-                else if (!string.IsNullOrWhiteSpace(airline))
-                {
-                    <p>No airlines found matching "@airline".</p>
-                }
-            </div>
-            <div class="flex-item">
-                <input type="text" id="name" placeholder="Any" @bind="name" />
-            </div>
-            <div class="flex-item">
-                <button type="button" @onclick="OnFindReservations">Find Reservations</button>
-            </div>
-        </div> 
-    </div>
-</section>
- 
-<section id="Reservations">
-    <h2>Reservations</h2>
-    <select id="ReservationList" class="flex-row" @bind-value="selectedReservationCode" @bind-value:event="oninput" @onchange="OnShowFlightReserved">
-        <option value="">Select a reservation</option>
-        @foreach (var reservation in matchingReservations)
+    <ul>
+        @foreach (var reservation in reservations)
         {
-            <option value="@reservation.ReservationCode">
-                @reservation.ReservationCode, @reservation.Airline, @reservation.TravelerName, @reservation.TravelerCitizen
-            </option>
+            <li>
+                <p>@reservation.TravelerName - @reservation.TravelerCitizen - @reservation.ReservationCode</p>
+                <button @onclick="() => SelectReservation(reservation)">Edit</button>
+            </li>
         }
-    </select>
-</section> 
+    </ul>
+</section>
 
-<section id="Reserve">
-    <h2>Reserve</h2>
-    <div>
-        <p>Reservation Code:</p>
-        <input class="flex-row" type="text" value="@selectedReservationCode" disabled />
-    </div>
-    <div>
-        <p>Flight Code:</p>
-        <input class="flex-row" type="text" value="@selectedFlightCode" disabled />
-    </div>
-    <div>
-        <p>Airline:</p>
-        <input class="flex-row" type="text" value="@selectedAirline" disabled />
-    </div>
-    <div>
-        <p>Day:</p>
-        <input class="flex-row" type="text" value="@selectedDay" disabled />
-    </div>
-    <div>
-        <p>Time:</p>
-        <input class="flex-row" type="text" value="@selectedTime" disabled />
-    </div>
-    <div>
-        <p>Cost:</p>
-        <input class="flex-row" type="text" value="@selectedCost" disabled />
-    </div>
-    <div>
-        <p>Name:</p>
-        <input class="flex-row" type="text" @bind="@selectedTravelerName" />
-    </div>
-    <div>
-        <p>Citizenship:</p>
-        <input class="flex-row" type="text" @bind="@selectedTravelerCitizen" />
-    </div>
-    <div>
-        <p>Status:</p>
-        <input class="flex-row" type="text" @bind="@selectedStatus" />
-    </div>
-    <div class="center-button-container">
-        <br />
-        <button @onclick="SaveReservations">Save</button>
-    </div>
-</section> 
-<div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
-<div class="flex-row align-items-center" ><p>@message</p></div>
-
+<section>
+    <h2>Edit Reservation</h2>
+    <input type="text" placeholder="Traveler Name" @bind="selectedReservation.TravelerName" />
+    <input type="text" placeholder="Traveler Citizen" @bind="selectedReservation.TravelerCitizen" />
+    <button @onclick="UpdateReservation">Save</button>
+</section>
 @code {
+    private string searchTerm = string.Empty;
     private List<Reservation> reservations = new List<Reservation>();
-    ReservationManager rm = new ReservationManager();
-    private Reservation? reservationSelected;
-    private List<Reservation> matchingReservations = new List<Reservation>();
+    private Reservation selectedReservation = new Reservation();
+    private ReservationManager reservationManager = new ReservationManager();
 
-    string? selectedReservationCode = null;
-    string? selectedFlightCode = null;
-    string? selectedAirline = null;
-    string? selectedDay = null;
-    string? selectedTime = null;
-    double? selectedCost;
-    string? selectedTravelerName = null;
-    string? selectedTravelerCitizen = null;
-    string? selectedStatus = null;
-    string code = string.Empty;
-    string airline = string.Empty;
-    string name = string.Empty;
+    private void SearchReservations()
+    {
+        reservations = reservationManager.FindReservations(searchTerm);
+    }
 
-    string errorMessage = string.Empty;
-    string message = string.Empty;
+    private void SelectReservation(Reservation reservation)
+    {
+        selectedReservation = reservation;
+    }
 
-    AirportManager am = new AirportManager();
-    FlightManager fm = new FlightManager();
-    Exception validate = new Exception();
-
-    // Initialization logic
+    private void UpdateReservation()
+    {
+        reservationManager.UpdateReservation(selectedReservation);
+        SearchReservations();
+    }
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-        reservations = ReservationManager.GetReservations();
-        matchingReservations = reservations;
-    }
-
-    private List<Flight> airlineList = FlightManager.GetFlights();
-    private IEnumerable<string> filteredAirlines => airlineList
-        .Where(flight => flight.Airline.Contains(airline, StringComparison.OrdinalIgnoreCase))
-        .Select(airline => airline.Airline)
-        .Distinct();
-
-    //OnFindReservations method: This method is called when the "Find Reservations" button is clicked.
-    //Calls FindReservations method in ReservationManager.
-    private void OnFindReservations()
-    {
-        try
-        {
-            matchingReservations = rm.FindReservations(code, airline, name, reservations);
-            if (matchingReservations.Any())
-            {
-                // Programmatically set the selected reservation to the first item
-                selectedReservationCode = matchingReservations.First().ReservationCode;
-                // Manually invoke any logic that depends on the selection change
-                OnShowFlightReserved(new ChangeEventArgs() { Value = selectedReservationCode });
-            }
-
-            if (matchingReservations.Count == 0)
-            {
-                ResetFields();
-                errorMessage = "No reservations found";
-            }
-            else
-            {
-                errorMessage = string.Empty;
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-
-    }
-
-    //OnShowFlightReserved method: This method is called when a reservations is selected from the dropdown.
-    //Sets reservations values based on change event. Then calls PopulateReservationDetails method to display flight information.
-    private void OnShowFlightReserved(ChangeEventArgs e)
-    {
-        var selectedCode = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(selectedCode))
-        {
-            ResetFields();
-        }
-        else
-        {
-            // Find and populate the selected reservation
-            var reservation = reservations.FirstOrDefault(r => r.ReservationCode == selectedCode);
-            if (reservation != null)
-            {
-                PopulateReservationDetails(reservation);
-            }
-        }
-    }
-
-    private void ResetFields()
-    {
-        selectedReservationCode = null;
-        selectedFlightCode = null;
-        selectedAirline = null;
-        selectedDay = null;
-        selectedTime = null;
-        selectedCost = null;
-        selectedTravelerName = null;
-        selectedTravelerCitizen = null;
-        selectedStatus = null;
-        errorMessage = string.Empty;
-        message = string.Empty;
-    }
-
-    // PopulateReservationDetails method: Populates the reservation details in the textboxes by binding variables.
-    private void PopulateReservationDetails(Reservation reservation)
-    {
-        selectedReservationCode = reservation.ReservationCode;
-        selectedAirline = reservation.Airline;
-        selectedCost = reservation.Cost;
-        selectedTravelerName = reservation.TravelerName;
-        selectedTravelerCitizen = reservation.TravelerCitizen;
-        selectedDay = reservation.Day;
-        selectedTime = reservation.Time;
-        selectedFlightCode = reservation.FlightCode;
-        selectedStatus  = reservation.Status;
-
-        errorMessage = string.Empty;
-        message = string.Empty;
-    }
-
-    // SaveReservations method: Saves the reservation details to the file.
-    private void SaveReservations()
-    {
-        //create new reservation object with updated values
-        //Reservation object is made.
-        Reservation reservation = new Reservation()
-            {
-                ReservationCode = selectedReservationCode,
-                Airline = selectedAirline,
-                Cost = selectedCost ?? 0,
-                TravelerName = selectedTravelerName,
-                TravelerCitizen = selectedTravelerCitizen,
-                Day = selectedDay,
-                Time = selectedTime,
-                FlightCode = selectedFlightCode,
-                Status = selectedStatus
-            };
-
-        //Add validations
-        ReservationValidationException.ValidateReservation(reservation);
-
-        //Update reservation to file
-        message = rm.UpdateReservation(reservation);
-    }
-
-    // HandleKeyDown method: Handles the keydown event for the airline input field
-    private async Task HandleKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "Tab")
-        {
-            // Prevent the default behavior to handle selection
-            await JS.InvokeVoidAsync("event.preventDefault");
-
-            // Example logic to select the first airline in the filtered list
-            // You might want to implement more sophisticated selection logic
-            if (filteredAirlines.Any())
-            {
-                SelectAirline(filteredAirlines.First());
-            }
-        }
-    }
-
-    // SelectAirline method: Selects the airline from the filtered list
-    private void SelectAirline(string airline)
-    {
-        this.airline = airline;
+        reservations = reservationManager.GetReservations();
     }
 } 
