@@ -17,39 +17,34 @@ namespace FlightReservations.Data
     public class ReservationManager
     {
         public List<Flight> flights;
+        public string Airline { get; set; } = string.Empty;
+        public string TravelerName { get; set; } = string.Empty;
+        public string TravelerCitizen { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; } = string.Empty;
+        public string ReservationCode { get; set; } = string.Empty;
+        public string SelectedFlightCode { get; set; } = string.Empty;
 
-        string airline {get; set;} 
-        string travelerName {get; set;}
-        string travelerCitizen {get; set;}
-        string errorMessage {get; set;}
-        string reservationCode  {get; set;}
-        string selectedFlightCode {get; set;}
-        public string ErrorMessage { get; private set; }
-
-        string RESERVATION_PATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
         public static List<Reservation> Reservations = new List<Reservation>(); 
        
-
+        static string filePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
         public ReservationManager()
         {
             flights = new List<Flight>();
             Reservations = new List<Reservation>();
-            PopulateReservations();
+            GetReservations();
         }
 
         //static method that can be accessed throughout the project
         public static List<Reservation> GetReservations()
         {
-            return Reservations;
-        }
-
-        public void PopulateReservations()
-        {
             try
             {
                 Reservation reservationlist;
+                List<Reservation> reservations = new List<Reservation>();
+                
+
                 //Foreach loop: Reads flights.csv file, splits data "," and loads data into individual variables. Finally creates flight objects and loads it into Flights list.
-                foreach (string line in File.ReadLines(RESERVATION_PATH))
+                foreach (string line in File.ReadLines(filePath))
                 {
                     string[] parts = line.Split(",");
                     string reservationCode = parts[0];
@@ -66,14 +61,17 @@ namespace FlightReservations.Data
                     Reservations.Add(reservationlist);
                 }
 
+                return Reservations;
             }
-            catch (Exception ex)
+             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                return Reservations;
             }
 
         }
 
+        // Method to find reservations based on a search term
         public List<Reservation> FindReservations(string code, string airline, string name, List<Reservation>? reservationlist)
         {
             var selectedreservation = new List<Reservation>();
@@ -93,12 +91,24 @@ namespace FlightReservations.Data
             return selectedreservation;
         }
 
-         public string UpdateReservation(Reservation newReservation)
+        public class OperationResult
+        {
+            public bool IsSuccess { get; set; }
+            public string Message { get; set; }
+
+            public OperationResult(bool isSuccess, string message)
+            {
+                IsSuccess = isSuccess;
+                Message = message;
+            }
+        }
+
+
+        public OperationResult UpdateReservation(Reservation newReservation)
         {
             try
             {
                 string RESERVATION_PATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
-
                 List<string> lines = new List<string>();
 
                 if (File.Exists(RESERVATION_PATH))
@@ -130,17 +140,17 @@ namespace FlightReservations.Data
                 // Write the updated list back to the file
                 File.WriteAllLines(RESERVATION_PATH, lines);
 
-                string successMessage = "File Updated successfully";
-                return successMessage;
+                return new OperationResult(true, "File Updated successfully");
             }
             catch (UnauthorizedAccessException ex)
             {
-                return errorMessage = $"Unauthorized access: {ex.Message}";
+                return new OperationResult(false, $"Unauthorized access: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return errorMessage = ex.Message;
+                return new OperationResult(false, ex.Message);
             }
         }
+
     }
 }

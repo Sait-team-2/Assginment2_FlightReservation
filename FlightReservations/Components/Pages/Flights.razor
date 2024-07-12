@@ -100,7 +100,6 @@
 
 <div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
 <div class="flex-row align-items-center" ><p>@message</p></div>
-<div class="flex-row align-items-center"><p>@reservationCode</p> </div>
 
 @code {
     FlightManager fm = new FlightManager();
@@ -129,7 +128,6 @@
         flights = fm.FindFlights(origin, destination, day);
         if (flights.Count > 0)
         {
-            //Automatically selects the first flight in dropdown list.
             SelectFlight(flights[0].Flight_Code);
         }
         else
@@ -138,15 +136,12 @@
         }
     }
 
-    //OnShowFlight method: This method is called when a flight is selected from the dropdown.
-    //Sets flightCode to value based on change event. Then calls SelectFlight method to display flight information.
     private void OnShowFlight(ChangeEventArgs e)
     {
-        string flightCode = e.Value.ToString();
+        string flightCode = e.Value?.ToString() ?? string.Empty;
         SelectFlight(flightCode);
     }
 
-    //SelectFlight method: Selects a flight and updates the flight details in the textboxes by binding variables.
     private void SelectFlight(string flightCode)
     {
         selectedFlight = null;
@@ -170,7 +165,7 @@
         }
     }
 
-    //ClearSelectedFlight method: Clears the selected flight details from textboxes.
+    
     private void ClearSelectedFlight()
     {
         selectedFlightCode = null;
@@ -179,32 +174,28 @@
         selectedTime = null;
         selectedCost = null;
     }
-    //MakeReservation method: Error checks. Makes reservation if no exceptions are thrown.
+
     private void MakeReservation()
     {
         errorMessage = null;
 
         try
         {
-            //TODO: Need to used the exception file for all the exception handling
-            //If a reservation is to be made but no flight is selected. Error message displayed.
             if (string.IsNullOrEmpty(selectedFlightCode))
             {
                 errorMessage = "Please select a flight before trying to make a reservation.";
                 return;
             }
 
-            //If name field is empty. Error message displayed.
             if (string.IsNullOrEmpty(travelerName))
             {
-                errorMessage = "Travelers Name is blank. Please enter traveler's name.";
+                errorMessage = "Traveler's Name is blank. Please enter traveler's name.";
                 return;
             }
 
-            //If citizenship field is empty. Error message is displayed.
             if (string.IsNullOrEmpty(travelerCitizen))
             {
-                errorMessage = "Travelers Citizenship is blank. Please enter traveler's citizenship.";
+                errorMessage = "Traveler's Citizenship is blank. Please enter traveler's citizenship.";
                 return;
             }
 
@@ -218,27 +209,19 @@
                 }
             }
 
-            //If flight is completely booked. Throw an exception.
             if (selectedFlight.Num_Seats <= 0)
             {
                 throw new Exception("Selected flight is fully booked.");
             }
 
-            //If flight is null. Throw an exception.
-            if (selectedFlight == null)
-            {
-                throw new Exception("Selected flight not found.");
-            }
-
-            //Reservation object is made.
+            // Create the reservation with the correct constructor
             Reservation reservation = new Reservation(travelerName, travelerCitizen, selectedFlight);
-            reservationCode = reservation.ReservationCode;
+            this.reservationCode = reservation.ReservationCode;
 
-            //Save reservation to file
-            string reservationCSV = reservation.toCSV();
+            string reservationCSV = reservation.ToCSV();
             SaveReservationCsv(reservationCSV);
 
-            message = "Reservation successful! Reservation Code:";
+            message = "Reservation successful! Reservation Code: " + this.reservationCode;
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -252,22 +235,28 @@
         //SaveReservationCsv method: Loads in reservation.csv file, reads file, then appends reservation data.
         void SaveReservationCsv(string reservationCsv)
         {
-            // string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
-            string RESERVATION_TXT = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
-            //Read all existing lines from the file.
-            List<string> lines = new List<string>();
-            if (File.Exists(RESERVATION_TXT))
+            try
             {
-                lines = File.ReadAllLines(RESERVATION_TXT).ToList();
+                // string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
+                string RESERVATION_TXT = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+                //Read all existing lines from the file.
+                List<string> lines = new List<string>();
+                if (File.Exists(RESERVATION_TXT))
+                {
+                    lines = File.ReadAllLines(RESERVATION_TXT).ToList();
+                }
+
+                //Append the reservationCsv string to the list of lines.
+                lines.Add(reservationCsv);
+                //Write all lines back into file.
+                File.WriteAllLines(RESERVATION_TXT, lines);
+
+                message = "Reservation saved successfully!";
             }
-
-            //Append the reservationCsv string to the list of lines.
-            lines.Add(reservationCsv);
-            //Write all lines back into file.
-            File.WriteAllLines(RESERVATION_TXT, lines);
-
-            message = "Reservation saved successfully!";
-        }
-
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+            }
     }
+}
 }

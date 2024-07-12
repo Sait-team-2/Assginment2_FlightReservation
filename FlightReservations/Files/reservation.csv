@@ -1,3 +1,6 @@
-EC-4943,TB-4017,Try a Bus Airways,Monday,18:30,1444.00,Amrit,Canadian,Active
+EC-4943,TB-4017,Try a Bus Airways,Monday,18:30,1444,Amrit,Canadian,Inactive
 EC-4944,TB-4017,Try a Bus Airways,Monday,18:30,1444.00,Amrit,Canadian,Inactive
 EC-4945,TB-4017,Try a Bus Airways,Monday,18:30,1444.00,Amrit,Canadian,Active
+T7215, TB-4017,Try a Bus Airways,Monday,18:30,1444,Name,Japanese,Active
+T2431, TB-4017,Try a Bus Airways,Monday,18:30,1444,Andrew,Chinese,Inactive
+T2282, TB-4017,Try a Bus Airways,Monday,18:30,1444,Andrew,Australian,Active

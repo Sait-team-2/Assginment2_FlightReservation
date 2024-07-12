@@ -17,19 +17,19 @@ namespace FlightReservations.Data
     /// </remarks>
     public class Reservation
     {
-        //declaring variables
-        private string reservationCode;
-        private string flightCode;
-        private string airline;
+        // Declarar variables e inicializarlas
+        private string reservationCode = string.Empty;
+        private string flightCode = string.Empty;
+        private string airline = string.Empty;
         private double cost;
-        private string name;
-        private string day;
-        private string time;
-        private string citizenship;
-        private string status;
-        private Flight flightdata;
+        private string name = string.Empty;
+        private string day = string.Empty;
+        private string time = string.Empty;
+        private string citizenship = string.Empty;
+        private string status = string.Empty;
+        private Flight flightdata = new Flight();
 
-        //generation of properties
+        // Generación de propiedades
         public string ReservationCode { get => reservationCode; set => reservationCode = value; }
         public string FlightCode { get => flightCode; set => flightCode = value; }
         public string Airline { get => airline; set => airline = value; }
@@ -41,8 +41,19 @@ namespace FlightReservations.Data
         public string Status { get => status; set => status = value; }
         public Flight Flight { get => flightdata; set => flightdata = value; }
 
-        //non-Parameterized constructor
-        public Reservation() { }
+        // Constructor sin parámetros
+        public Reservation()
+        {
+            reservationCode = string.Empty;
+            flightCode = string.Empty;
+            airline = string.Empty;
+            name = string.Empty;
+            day = string.Empty;
+            time = string.Empty;
+            citizenship = string.Empty;
+            status = string.Empty;
+            flightdata = new Flight();
+        }
 
         //parameterized constructor
         public Reservation(string reservationCode, string flightCode, string airline, string day, string time, double cost, string name, string citizenship, string status)
@@ -51,7 +62,7 @@ namespace FlightReservations.Data
             this.FlightCode = flightCode;
             this.Airline = airline;
             this.Day = day;
-            this.time = time;
+            this.Time = time;
             this.Cost = cost;
             this.TravelerName = name;
             this.TravelerCitizen = citizenship;
@@ -72,6 +83,11 @@ namespace FlightReservations.Data
             this.Cost = flight.Cost;
             this.Status = "Active";
 
+            this.FlightCode = flight.Flight_Code; // Inicializar flightCode con el valor del objeto Flight
+            this.Airline = flight.Airline;
+            this.Day = flight.Day;
+            this.Time = flight.Time;
+            this.Cost = (int)flight.Cost; // Explicitly cast double to int
             ReservationCode = GenerateCode(flight, name, citizenship);
         }
 
@@ -92,8 +108,8 @@ namespace FlightReservations.Data
             return $"{flightCode}{travelerNameCode}{citizenshipCode}";
         }
 
-        //toCSV method: Returns reservation details in CSV format to save to file.
-        public string toCSV()
+        // Método toCSV: Devuelve los detalles de la reserva en formato CSV para guardarlo en un archivo.
+        public string ToCSV()
         {
             return $"{ReservationCode}, {FlightCode},{Airline},{Day},{Time},{Cost},{TravelerName},{TravelerCitizen},{Status}";
         }
@@ -110,3 +126,4 @@ namespace FlightReservations.Data
         }
     }
 }
+

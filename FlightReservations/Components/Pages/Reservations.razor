@@ -65,10 +65,10 @@
             <div class="flex-item">
                 <button type="button" @onclick="OnFindReservations">Find Reservations</button>
             </div>
-        </div> 
+        </div>
     </div>
 </section>
- 
+
 <section id="Reservations">
     <h2>Reservations</h2>
     <select id="ReservationList" class="flex-row" @bind-value="selectedReservationCode" @bind-value:event="oninput" @onchange="OnShowFlightReserved">
@@ -80,7 +80,7 @@
             </option>
         }
     </select>
-</section> 
+</section>
 
 <section id="Reserve">
     <h2>Reserve</h2>
@@ -124,9 +124,10 @@
         <br />
         <button @onclick="SaveReservations">Save</button>
     </div>
-</section> 
+</section>
 <div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
-<div class="flex-row align-items-center" ><p>@message</p></div>
+<div class="flex-row align-items-center"><p>@message</p></div>
+
 
 @code {
     private List<Reservation> reservations = new List<Reservation>();
@@ -256,26 +257,50 @@
     // SaveReservations method: Saves the reservation details to the file.
     private void SaveReservations()
     {
-        //create new reservation object with updated values
-        //Reservation object is made.
-        Reservation reservation = new Reservation()
+        try
+        {
+            //create new reservation object with updated values
+            Reservation reservation = new Reservation()
+                {
+                    ReservationCode = selectedReservationCode,
+                    Airline = selectedAirline,
+                    Cost = selectedCost ?? 0,
+                    TravelerName = selectedTravelerName,
+                    TravelerCitizen = selectedTravelerCitizen,
+                    Day = selectedDay,
+                    Time = selectedTime,
+                    FlightCode = selectedFlightCode,
+                    Status = selectedStatus
+                };
+
+            //Add validations
+            ReservationValidationException.ValidateReservation(reservation);
+
+            // Call UpdateReservation and store the result
+            ReservationManager.OperationResult result = rm.UpdateReservation(reservation);
+
+            // Check the result and update UI/message accordingly
+            if (result.IsSuccess)
             {
-                ReservationCode = selectedReservationCode,
-                Airline = selectedAirline,
-                Cost = selectedCost ?? 0,
-                TravelerName = selectedTravelerName,
-                TravelerCitizen = selectedTravelerCitizen,
-                Day = selectedDay,
-                Time = selectedTime,
-                FlightCode = selectedFlightCode,
-                Status = selectedStatus
-            };
+                //refresh reservation list
+                reservations = ReservationManager.GetReservations();
 
-        //Add validations
-        ReservationValidationException.ValidateReservation(reservation);
+                //reload screen
+                PopulateReservationDetails(reservation);
 
-        //Update reservation to file
-        message = rm.UpdateReservation(reservation);
+                message = result.Message;
+            }
+            else
+            {
+                errorMessage = result.Message;
+            }
+        }
+        catch (ReservationValidationException ex)
+        {
+            errorMessage = ex.Message;
+                // Or return it from a method, etc.
+            }
+
     }
 
     // HandleKeyDown method: Handles the keydown event for the airline input field
@@ -298,6 +323,6 @@
     // SelectAirline method: Selects the airline from the filtered list
     private void SelectAirline(string airline)
     {
-        this.airline = airline;
+        reservations = ReservationManager.GetReservations();
     }
 } 
