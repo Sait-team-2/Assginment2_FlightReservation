@@ -1,12 +1,4 @@
-﻿<!--
-/* This is the Flights page. This page is used to find flights based on origin, destination and day.
-* It also allows the user to select a flight and make a reservation.
-* The user can enter their name and citizenship to make a reservation.
-*
-* The page is divided into three sections: FlightFinder, Flights and Reserve.
-*/
--->
-@page "/flights"
+﻿@page "/flights"
 @using FlightReservations.Data
 @using System.IO
 @using System
@@ -51,7 +43,7 @@
 
 <section id="Flights">
     <h2>Flights</h2>
-    <select class="flex-row" @onchange="OnShowFlight">
+    <select id="FlightList" class="flex-row" @onchange="OnShowFlight">
         <option disabled selected>Select a flight</option>
         @foreach (var f in flights)
         {
@@ -96,8 +88,8 @@
     </div>
 </section>
 
-<div class="flex-row align-items-center"><p>@errorMessage</p> </div>
-<div class="flex-row align-items-center"><p>@reservationCode</p> </div>
+<div class="flex-row align-items-center" style="color:red;"><p>@errorMessage</p></div>
+<div class="flex-row align-items-center" ><p>@message</p></div>
 
 @code {
     FlightManager fm = new FlightManager();
@@ -114,7 +106,12 @@
     string? travelerCitizen = null;
     string? errorMessage = null;
     string? reservationCode = null;
+    string? message = null;
 
+    Flight selectedFlight;
+
+    //OnFindFlights method: This method is called when the "Find Flights" button is clicked. 
+    //Calls FindFlights method in FlightManager class and finds flight based on origin, destination and day.
     private void OnFindFlights()
     {
         flights = fm.FindFlights(origin, destination, day);
@@ -136,8 +133,17 @@
 
     private void SelectFlight(string flightCode)
     {
-        Flight? selectedFlight = flights.FirstOrDefault(f => f.Flight_Code == flightCode);
-
+        selectedFlight = null;
+        //Loops throught flights list to find flight.
+        foreach (var flight in flights)
+        {
+            if (flight.Flight_Code == flightCode)
+            {
+                selectedFlight = flight;
+                break; //TODO: do we need break? I think this is not a best practice
+            }
+        }
+        //If flight is found, setting variables to selected flight details to display.
         if (selectedFlight != null)
         {
             selectedFlightCode = selectedFlight.Flight_Code;
@@ -181,11 +187,14 @@
                 return;
             }
 
-            Flight? selectedFlight = flights.FirstOrDefault(f => f.Flight_Code == selectedFlightCode);
-
-            if (selectedFlight == null)
+            //Loops throught flights list to find flight.
+            foreach (var flight in flights)
             {
-                throw new Exception("Selected flight not found.");
+                if (flight.Flight_Code == selectedFlightCode)
+                {
+                    selectedFlight = flight;
+                    break;
+                }
             }
 
             if (selectedFlight.Num_Seats <= 0)
@@ -204,31 +213,38 @@
             SaveReservationCsv(reservationCSV);
 
             errorMessage = "Reservation successful! Reservation Code: " + this.reservationCode;
+            message = "Reservation successful! Reservation Code:";
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            errorMessage = $"Unauthorized access: {ex.Message}";
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
-    }
-    // Method to generate a reservation code
-    private string GenerateReservationCode(string name, string citizenship, Flight flight)
-    {
-        // You can adjust the logic for generating the reservation code here
-        return $"{flight.Flight_Code[..3].ToUpper()}{name[..3].ToUpper()}-{citizenship[..3].ToUpper()}";
-    }
-    void SaveReservationCsv(string reservationCsv)
-    {
-        try
+
+        //SaveReservationCsv method: Loads in reservation.csv file, reads file, then appends reservation data.
+        void SaveReservationCsv(string reservationCsv)
         {
-            string RESERVATION_TXT = @"..\FlightReservations\Files\reservation.csv";
+            try
+            {
+            // string RESERVATION_TXT = Path.Combine(AppContext.BaseDirectory, "reservation.csv");
+            string RESERVATION_TXT = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+            //Read all existing lines from the file.
             List<string> lines = new List<string>();
             if (File.Exists(RESERVATION_TXT))
             {
                 lines = File.ReadAllLines(RESERVATION_TXT).ToList();
             }
 
+            //Append the reservationCsv string to the list of lines.
             lines.Add(reservationCsv);
+            //Write all lines back into file.
             File.WriteAllLines(RESERVATION_TXT, lines);
+
+            message = "Reservation saved successfully!";
+        }
 
             errorMessage = "Reservation saved successfully!";
         }

@@ -1,10 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Blazorise;
+using System;
 using System.IO;
-using System.Linq;
 
 namespace FlightReservations.Data
-{
+{ 
+    /// <summary>
+    /// The <c>ReservationManager</c> class is a central component within a flight reservation
+    /// system. It is designed to manage various aspects of flight reservations, including
+    /// storing, retrieving, and updating reservation data. This class serves as the backbone
+    /// for handling the reservation logic in the application.
+    /// </summary>
+    /// <remarks>
+    /// This class includes methods for populating reservations from a file, finding specific
+    /// reservations based on criteria, and updating reservations.
+    /// </remarks>
     public class ReservationManager
     {
         public string Airline { get; set; } = string.Empty;
@@ -14,27 +23,52 @@ namespace FlightReservations.Data
         public string ReservationCode { get; set; } = string.Empty;
         public string SelectedFlightCode { get; set; } = string.Empty;
 
-        // Method to get all reservations
-        public List<Reservation> GetReservations()
+        string airline {get; set;} 
+        string travelerName {get; set;}
+        string travelerCitizen {get; set;}
+        string errorMessage {get; set;}
+        string reservationCode  {get; set;}
+        string selectedFlightCode {get; set;}
+        public string ErrorMessage { get; private set; }
+
+        string RESERVATION_PATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+        public static List<Reservation> Reservations = new List<Reservation>(); 
+       
+
+        public ReservationManager()
         {
             string filePath = @"..\FlightReservations\Files\reservation.csv";
             List<Reservation> reservations = new List<Reservation>();
 
-            if (File.Exists(filePath))
+        //static method that can be accessed throughout the project
+        public static List<Reservation> GetReservations()
+        {
+            return Reservations;
+        }
+
+        public void PopulateReservations()
+        {
+            try
             {
-                var lines = File.ReadAllLines(filePath);
-                foreach (var line in lines)
+                Reservation reservationlist;
+                //Foreach loop: Reads flights.csv file, splits data "," and loads data into individual variables. Finally creates flight objects and loads it into Flights list.
+                foreach (string line in File.ReadLines(RESERVATION_PATH))
                 {
-                    var fields = line.Split(',');
-                    var reservation = new Reservation
-                    {
-                        FlightCode = fields[0],
-                        TravelerName = fields[1],
-                        TravelerCitizen = fields[2],
-                        ReservationCode = fields[3]
-                    };
-                    reservations.Add(reservation);
+                    string[] parts = line.Split(",");
+                    string reservationCode = parts[0];
+                    string flightCode = parts[1];
+                    string airline = parts[2];
+                    string day = parts[3];
+                    string time = parts[4];
+                    double cost = double.Parse(parts[5]);
+                    string name = parts[6];
+                    string citizenship = parts[7];
+                    string status = parts[8];
+
+                    reservationlist = new Reservation(reservationCode, flightCode, airline, day, time, cost, name, citizenship, status);
+                    Reservations.Add(reservationlist);
                 }
+
             }
 
             return reservations;
@@ -50,56 +84,56 @@ namespace FlightReservations.Data
                 r.ReservationCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        // Method to update an existing reservation
-        public void UpdateReservation(Reservation updatedReservation)
-        {
-            string filePath = @"..\FlightReservations\Files\reservation.csv";
-            List<string> lines = new List<string>();
-
-            if (File.Exists(filePath))
-            {
-                lines = File.ReadAllLines(filePath).ToList();
-            }
-
-            var updatedLines = lines.Select(line =>
-            {
-                var fields = line.Split(',');
-                if (fields[3] == updatedReservation.ReservationCode)
-                {
-                    fields[0] = updatedReservation.FlightCode;
-                    fields[1] = updatedReservation.TravelerName;
-                    fields[2] = updatedReservation.TravelerCitizen;
-                }
-                return string.Join(",", fields);
-            }).ToList();
-
-            File.WriteAllLines(filePath, updatedLines);
+            return selectedreservation;
         }
 
-        public void MakeReservation()
-        {
-            // Your existing code to make a reservation
-        }
-
-        public void SaveReservationCsv(string reservationCsv)
+         public string UpdateReservation(Reservation newReservation)
         {
             try
             {
-                string RESERVATION_TXT = @"..\FlightReservations\Files\reservation.csv";
+                string RESERVATION_PATH = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\Files\reservation.csv"));
+
                 List<string> lines = new List<string>();
-                if (File.Exists(RESERVATION_TXT))
+
+                if (File.Exists(RESERVATION_PATH))
                 {
-                    lines = File.ReadAllLines(RESERVATION_TXT).ToList();
+                    lines = File.ReadAllLines(RESERVATION_PATH).ToList();
+
+                    bool reservationFound = false;
+                    for (int i = 0; i < lines.Count; i++)
+                    {
+                        string[] parts = lines[i].Split(',');
+                        if (parts[0] == newReservation.ReservationCode) 
+                        {
+                            lines[i] = $"{newReservation.ReservationCode},{newReservation.FlightCode},{newReservation.Airline},{newReservation.Day},{newReservation.Time},{newReservation.Cost},{newReservation.TravelerName},{newReservation.TravelerCitizen},{newReservation.Status}";
+                            reservationFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!reservationFound)
+                    {
+                        lines.Add($"{newReservation.ReservationCode},{newReservation.FlightCode},{newReservation.Airline},{newReservation.Day},{newReservation.Time},{newReservation.Cost},{newReservation.TravelerName},{newReservation.TravelerCitizen},{newReservation.Status}");
+                    }
+                }
+                else
+                {
+                    lines.Add($"{newReservation.ReservationCode},{newReservation.FlightCode},{newReservation.Airline},{newReservation.Day},{newReservation.Time},{newReservation.Cost},{newReservation.TravelerName},{newReservation.TravelerCitizen},{newReservation.Status}");
                 }
 
-                lines.Add(reservationCsv);
-                File.WriteAllLines(RESERVATION_TXT, lines);
+                // Write the updated list back to the file
+                File.WriteAllLines(RESERVATION_PATH, lines);
 
-                ErrorMessage = "Reservation saved successfully!";
+                string successMessage = "File Updated successfully";
+                return successMessage;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return errorMessage = $"Unauthorized access: {ex.Message}";
             }
             catch (Exception ex)
             {
-                ErrorMessage = ex.Message;
+                return errorMessage = ex.Message;
             }
         }
     }
