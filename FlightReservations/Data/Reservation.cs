@@ -21,7 +21,7 @@ namespace FlightReservations.Data
         private string reservationCode = string.Empty;
         private string flightCode = string.Empty;
         private string airline = string.Empty;
-        private int cost;
+        private double cost;
         private string name = string.Empty;
         private string day = string.Empty;
         private string time = string.Empty;
